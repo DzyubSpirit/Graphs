@@ -6,10 +6,44 @@
 	<script src="index.js"></script>
 </head>
 <body>
-	<div id="divCanvas" style="border: 1px solid black; width: 640px; height: 480px; align: center; position: absolute; left: 220px; top: 0px">
-		<canvas id="canvas" width="640px" height="480px">No canvas</canvas>
-		<div id="div1"></div>
-		<div id="div2"></div>
-	</div>
+	<table>
+	  <tr>
+	  	<td id="tdEmpty"></td>
+		<td>
+		<div id="divCanvas" style="border: 1px solid black; width: 640px; height: 480px; align: center;">
+			<canvas id="canvas" width="640px" height="480px">No canvas</canvas>
+			<div id="div1"></div>
+			<div id="div2"></div>
+		</div>
+		</td>
+		<td valign="top">
+			<table>
+				<tr>
+					<td>
+						Gravity:
+					</td>
+					<td rowspan="2" style="width: 30px"></td>
+					<td>
+						Tension:
+					</td>
+				</tr>
+				<tr style="height: 110px">
+					<td id="tdGravity" style="position: relative; width: 50px">
+						<div id="scalaGravity" style="background-color: #999; position: absolute; left: 25px; top: 0px; width: 3px; height: 110px; z-index: 0"></div>
+						<div id="divGravity" style="background-color: #333; position: absolute; left: 10px; top: 50px; width: 30px; height: 10px; z-index: 0"></div>
+						
+					</td>
+					<td id="tdTension" style="position: relative; width: 50px">
+						<div id="scalaTension" style="background-color: #999; position: absolute; left: 25px; top: 0px; width: 3px; height: 110px; z-index: 0"></div>
+						<div id ="divTension" style="background-color: #333; position: absolute; left: 10px; top: 50px; width: 30px; height: 10px; z-index: 0"></div>
+						
+					</td>
+					
+				</tr>
+				
+			</table>
+		</td>
+	  </tr>
+	</table>
 </body>
 </html>
