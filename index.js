@@ -56,9 +56,9 @@ window.onload = function() {
 		graph[t].moving = false;
 		graph[t].selected = false;
 		graph[t].selectingTime = 0;
-		graph[t].selectingTime = 0;
 		graph[t].roadTarget = false;
-		graph[t].angle = 0;
+		graph[t].angleCos = 1;
+		graph[t].angleSin = 0;
 		graph[t].x = Math.random()*canvas.width;
 		graph[t].y = Math.random()*canvas.height;
 	}
@@ -207,7 +207,13 @@ window.onload = function() {
 	}
 
 	function physics() {
-		for (var t=0; t<graph.length; t++)
+		for (var t=0; t<graph.length; t++) {
+			if (graph[t][t] !== undefined) {
+				var newCos = 0.9962*graph[t].angleCos - 0.0872*graph[t].angleSin;
+				var newSin = 0.9962*graph[t].angleSin + 0.0872*graph[t].angleCos;
+				graph[t].angleCos = newCos;
+				graph[t].angleSin = newSin;
+			}
 			if (graph[t].moving) {
 				if (Math.abs(mx-graph[t].lmx)+Math.abs(my-graph[t].lmy)<20) {
 					var dt = new Date() - graph[t].lDate;
@@ -224,7 +230,8 @@ window.onload = function() {
 					graph[t].lDate = new Date();
 				}
 			}
-
+		}
+		
 		var div1 = document.getElementById('div1');
 		var div2 = document.getElementById('div2');
 		var dt = 0.1;
@@ -282,8 +289,12 @@ window.onload = function() {
 			ctx.lineWidth = 2;
 			ctx.strokeStyle = graph[t].selected? "#54F" : "#939";
 			ctx.arc(graph[t].x, graph[t].y,CIRCLE_RADIUS, 0, 2*Math.PI, true);
-			if (graph[t][t] !== undefined)
-				ctx.lineTo(graph[t].x-CIRCLE_RADIUS, graph[t].y);
+			if (graph[t][t] !== undefined) {
+				var dx = CIRCLE_RADIUS*graph[t].angleCos;
+				var dy = CIRCLE_RADIUS*graph[t].angleSin;
+				ctx.moveTo(graph[t].x+dx, graph[t].y+dy);
+				ctx.lineTo(graph[t].x-dx, graph[t].y-dy);
+			}
 			ctx.stroke();
 
 			ctx.beginPath();
