@@ -3,8 +3,8 @@ window.onload = function() {
 	var MAX_VELOCITY = 20;
 	var MAX_GRAVITY = 190000;
 	var MIN_GRAVITY = 10000;
-	var MAX_TENSION = 0.055;
-	var MIN_TENSION = 0.005;
+	var MAX_TENSION = 0.0545;
+	var MIN_TENSION = 0.0005;
 
 	var tdEmpty = document.getElementById('tdEmpty');
 	tdEmpty.style.width = '220px';
@@ -45,6 +45,7 @@ window.onload = function() {
 	var graph = [];
 	for (var t=0; t<cityNum; t++) {
 		graph[t] = {};
+		
 		for (var t1=0; t1<cityNum; t1++)
 			if (t != t1 && Math.random()<2/cityNum) {
 				graph[t][t1] = {};
@@ -57,6 +58,7 @@ window.onload = function() {
 		graph[t].selectingTime = 0;
 		graph[t].selectingTime = 0;
 		graph[t].roadTarget = false;
+		graph[t].angle = 0;
 		graph[t].x = Math.random()*canvas.width;
 		graph[t].y = Math.random()*canvas.height;
 	}
@@ -162,16 +164,30 @@ window.onload = function() {
 	}
 
 	window.onmouseup = function(e) {
-		for (var t=0; t<graph.length; t++) 
-			if (graph[t].roadTarget) {
-				for (var t1=0; t1<graph.length; t1++) {
-					if (graph[t1].selected) {
-						graph[t1][t] = {};
-						graph[t1][t].length = 10;
-						graph[t1][t].selected = false;
-					}
-				}
+		var selectedCities = [];
+		var roadTargetCities = [];
+		for (var t=0; t<graph.length; t++) {
+			if (graph[t].selected) {
+				selectedCities[selectedCities.length] = t;
 			}
+			if (graph[t].roadTarget) {
+				roadTargetCities[roadTargetCities.length] = t;
+			}
+
+			
+		}
+
+		for (var t=0; t<selectedCities.length; t++) {
+			for (var t1=0; t1<roadTargetCities.length; t1++) {
+					if (selectedCities[t] === roadTargetCities[t1] && graph[selectedCities[t]][selectedCities[t]] !==undefined) {
+						graph[selectedCities[t]][selectedCities[t]] = undefined;
+						continue;
+					}
+					graph[selectedCities[t]][roadTargetCities[t1]] = {};
+					graph[selectedCities[t]][roadTargetCities[t1]].length = 10;
+					graph[selectedCities[t]][roadTargetCities[t1]].selected = false;	
+				}
+		}
 
 		for (var t=0; t<graph.length; t++) {
 			graph[t].moving = false;
@@ -266,6 +282,8 @@ window.onload = function() {
 			ctx.lineWidth = 2;
 			ctx.strokeStyle = graph[t].selected? "#54F" : "#939";
 			ctx.arc(graph[t].x, graph[t].y,CIRCLE_RADIUS, 0, 2*Math.PI, true);
+			if (graph[t][t] !== undefined)
+				ctx.lineTo(graph[t].x-CIRCLE_RADIUS, graph[t].y);
 			ctx.stroke();
 
 			ctx.beginPath();
@@ -278,6 +296,10 @@ window.onload = function() {
 			if (graph[t].selected) {
 				var dx = mx - graph[t].x;
 				var dy = my - graph[t].y;
+				if (dx*dx+dy*dy<CIRCLE_RADIUS*CIRCLE_RADIUS) {
+					graph[t].roadTarget = true;
+				} else {
+					graph[t].roadTarget = false;
 				var l2 = dx*dx+dy*dy;
 				var l = Math.sqrt(l2);
 				var cosa = l? dx/l : 0;
@@ -314,10 +336,11 @@ window.onload = function() {
 					y2 = graph[minl2n].y - CIRCLE_RADIUS*sina;
 					graph[minl2n].roadTarget = true;
 				}
-
+				
 
 
 				drawArrow(ctx, x1, y1, x2, y2, cosa, sina, l, true, false);
+				}
 
 			}
 
