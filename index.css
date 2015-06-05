@@ -1,0 +1,19 @@
+#tableGraph {
+	border-spacing: 0px;
+}
+
+#tableGraph td {
+	border: 1px solid black;
+	width: 20px;
+	height: 20px;
+}
+
+#button1Table {
+	border-spacing: 0px;
+}
+
+#button1Table td {
+	border: 1px solid black;
+	width: 20px;
+	height: 20px;
+}

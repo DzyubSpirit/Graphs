@@ -3,14 +3,14 @@
 <head>
 	<title></title>
 	<meta charset="utf-8">
+	<link rel="stylesheet" href="index.css"></link>
 	<script src="index.js"></script>
 </head>
 <body>
 	<table>
 	  <tr>
-	  	<td id="tdEmpty"></td>
-		<td>
-		<div id="divCanvas" style="border: 1px solid black; width: 640px; height: 480px; align: center;">
+	  	<td valign="top">
+		<div id="divCanvas" style="border: 1px solid black; width: 640px; height: 480px; align: center">
 			<canvas id="canvas" width="640px" height="480px">No canvas</canvas>
 			<div id="div1"></div>
 			<div id="div2"></div>
@@ -40,9 +40,40 @@
 					</td>
 					
 				</tr>
+				<tr>
+					<td valign="top" colspan="4">
+						<select id="exerciseSelect">
+							<option>Обрати завдання</option>
+							<option>Завдання 3:</option>
+						</select>
+					</td>
+				</tr>
+				<!--
+				<tr align="center">
+					<td colspan="4"><button id="buttonMatrix">Матриця інцендентності</button></td>
+				</tr>
+				-->
 				
 			</table>
 		</td>
+		<td valign="top">
+			<img id="imgPlus" width="32" height="32" src="Plus.png">
+			<br>
+			<img id="imgMinus" width="32" height="32" src="Minus.png">
+		</td>
+		
+		<td id="tdEmpty" valign="top">
+			<!--
+			<button id="butMatAdjasency">Матриця суміжності</button>
+			<button id="butMatDistance"> Матриця відстаней</button>
+	  		<button id="butMatReach">Матриця досяжності</button>
+	  		<button id="butCycleDraw">Вибрати випадковий цикл</button>
+	  		<button id="butCycleDrawNot">Перестати вибирати цикл</button>
+	  		-->
+	  		<table id="tableGraph">
+	  			<tr><td></td></tr>
+	  		</table>
+	  	</td>
 	  </tr>
 	</table>
 </body>

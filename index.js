@@ -10,23 +10,234 @@ window.onload = function() {
 	tdEmpty.style.width = '220px';
 	
 	var divCanvas = document.getElementById("divCanvas");
+	var tableGraph = document.getElementById('tableGraph');
 	var canvas = document.getElementById("canvas");
-	var canvasBoundRect = canvas.getBoundingClientRect();
 	var ctx = canvas.getContext("2d");
+	//var buttonMatrix = document.getElementById('buttonMatrix');
+	
 	var divGravity = document.getElementById('divGravity');
-	var scalaGravityTop = document.getElementById('scalaGravity').getBoundingClientRect().top;
 	var tdGravity = document.getElementById('tdGravity');
 	var divTension = document.getElementById('divTension');
-	var scalaTensionTop = document.getElementById('scalaTension').getBoundingClientRect().top;
 	var tdTension = document.getElementById('tdTension');
+	var imgPlus = document.getElementById('imgPlus');
+	var imgMinus = document.getElementById('imgMinus');
+	// var butMatAdjasency = document.getElementById('butMatAdjasency');
+	// var butMatDistance = document.getElementById('butMatDistance');
+	// var butMatReach = document.getElementById('butMatReach');
+	var exerciseSelect = document.getElementById('exerciseSelect');
+	exerciseSelect.selectedIndex = 0;
+	exerciseSelect.onchange = function() {
+		var parent = this.parentElement;
+			
+		switch (this.selectedIndex) {
+			case 0: {
+				while (parent.children.length>1) {
+					parent.children[1].remove();
+				}
+			} break;
+			case 1: {
+				var textDiv = document.createElement('div');
+				textDiv.innerHTML = 'Початкова вершина';
+				parent.appendChild(textDiv);
+
+				var citySelect = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect.appendChild(opt);
+				
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect.appendChild(opt);
+				}
+				parent.appendChild(citySelect);
+
+
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Обрахувати BFS:';
+				parent.appendChild(button1);
+				var button1Table;
+
+				var on = false;
+				
+				button1.onclick = function() {
+					if (on) {
+						parent.removeChild(button1Table);
+						on = false;
+						return;
+					}
+					button1Table = document.createElement('table');
+					button1Table.id = 'button1Table';
+					var tr = document.createElement('tr');
+					var td = document.createElement('td');
+					td.innerHTML = 'Вершина';
+					tr.appendChild(td);
+					td = document.createElement('td');
+					td.innerHTML = 'BFS-номер';
+					tr.appendChild(td);
+					td = document.createElement('td');
+					td.innerHTML = 'Вміст черги';
+					tr.appendChild(td);
+					
+					var stac =  [];
+					var mas = [];
+					for (var i = 0; i < graph.cityNum; i++) {
+						mas[i] = true;
+					}
+
+					if (citySelect.selectedIndex == 0) {
+						citySelect.selectedIndex = 1;
+					}
+
+					mas[citySelect.selectedIndex - 1] = true;
+					stac.push(citySelect.selectedIndex - 1);
+
+					for (var i = 0; i < graph.cityNum; i++)	 {
+						
+					}
+
+					button1Table.appendChild(tr);
+					parent.appendChild(button1Table);
+
+					on = true;
+				}
+
+				parent.appendChild(button1);
+			} break;
+		}
+	}
+
+	//var butCycleDraw = document.getElementById('butCycleDraw');
+	//var butCycleDrawNot = document.getElementById('butCycleDrawNot');
+	var traces = [];
+	var cycles = [];
+	var curCycle = -1;
+
+	getBoundingRects();
 
 	var gravity = 100000;
 	var zep = 0.03;
-		
+	var whichMatrix = 0;	
 
 	var mx = 0, my = 0;
 	var changingGravity = false;
 	var changingTension = false;
+	var changingLength = -1;
+		var matType = 0
+
+	/**
+	butCycleDraw.onclick = function() {
+		if (curCycle !==-1) {
+			for (var i = 0 ; i<cycles[curCycle].length-1; i++) {
+			graph[cycles[curCycle][i]].highlighted = false;
+			graph[cycles[curCycle][i]][cycles[curCycle][i+1]].highlighted = false;
+		}
+		}
+		curCycle = Math.floor(Math.random()*cycles.length);
+		for (var i = 0 ; i<cycles[curCycle].length-1; i++) {
+			graph[cycles[curCycle][i]].highlighted = true;
+			graph[cycles[curCycle][i]][cycles[curCycle][i+1]].highlighted = true;
+		}
+
+	}
+
+	butCycleDrawNot.onclick = function() {
+
+		for (var i = 0 ; i<cycles[curCycle].length-1; i++) {
+			graph[cycles[curCycle][i]].highlighted = false;
+			graph[cycles[curCycle][i]][cycles[curCycle][i+1]].highlighted = false;
+		}
+	}
+
+	butMatAdjasency.onclick = function() {
+		matType = 0;
+		for (var i = 0; i<graph.cityNum; i++) {
+			for (var j = 0; j < graph.cityNum; j++) {
+				if (graph[i][j] === undefined) {
+					tableGraph.rows[j+1].cells[i+1].innerHTML = 0; 
+				} else {
+					tableGraph.rows[j+1].cells[i+1].innerHTML = graph[i][j].length;
+				}
+			}
+		}
+	}
+
+	butMatDistance.onclick = function() {
+		matType = 1;
+		var mtx = [];
+		traces = [];
+		for (var cityN = 0; cityN < graph.cityNum; cityN++) {
+			var pr = true;
+			var s = Array(graph.cityNum);
+			var minDist = Array(graph.cityNum);
+			var minDistCities = Array(graph.cityNum);
+			for (var i = 0 ; i <graph.cityNum; i++) {
+				s[i] = true;
+				minDist[i] = -1;
+			}
+			s[cityN] = false;
+			minDist[cityN] = 0;
+			minDistCities[cityN] = [];
+			for (var i = 0; i < graph.cityNum; i++) {
+				if (i !== cityN && graph[cityN][i] !== undefined) {
+					minDist[i] = graph[cityN][i].length;
+					minDistCities[i] = [cityN];
+				}
+			}
+			for (var i = 0; i < graph.cityNum - 1; i++) {
+				var minJ = -1;
+				var minV = 0;
+				for (j = 0; j < graph.cityNum; j++) {
+					if (s[j] && minDist[j] !== -1) {
+						minJ = j;
+						minV = minDist[j];
+					}
+				}
+				if (minJ === -1) break;
+				
+				s[minJ] = false;
+				for (var j = 0; j < graph.cityNum; j++) {
+					if (s[j] && graph[minJ][j] !== undefined && (minDist[j] === -1 || minDist[minJ]+graph[minJ][j].length < minDist[j])) {
+						minDist[j] = minDist[minJ] + graph[minJ][j].length;
+						minDistCities[j] = [].concat(minDistCities[minJ]);
+						minDistCities[j].push(minJ);
+						if (graph[j][cityN] !== undefined) {
+							cycles.push(minDistCities[j].concat([j, cityN]));
+						}
+					}
+				}
+			}
+
+			mtx.push(minDist);
+			traces.push(minDistCities);
+		}
+		for (var i = 0; i<graph.cityNum; i++) {
+			for (var j =0; j <graph.cityNum; j++) {
+				if (mtx[i][j] !== -1) {
+					tableGraph.rows[i+1].cells[j+1].innerHTML = mtx[i][j];
+				} else {
+					tableGraph.rows[i+1].cells[j+1].innerHTML = 'oo';
+				}
+			}
+		}
+		console.log(cycles);
+	}
+
+	butMatReach.onclick = function() {
+		butMatDistance.onclick();
+		for (var i = 0; i < graph.cityNum; i++) {
+			for (var j = 0; j < graph.cityNum; j++) {
+				if (tableGraph.rows[i+1].cells[j+1].innerHTML === 'oo') {
+					tableGraph.rows[i+1].cells[j+1].innerHTML = '0';
+				} else {
+					tableGraph.rows[i+1].cells[j+1].innerHTML = '1';
+				}
+			}
+		}
+		matType = 2;
+		
+	}
+	*/
 
 	tdGravity.onmousedown = function(e) {
 		changingGravity = true;
@@ -40,27 +251,310 @@ window.onload = function() {
 		console.log(prop+' '+ctx[prop]);
 	*/
 
+	imgPlus.onmouseenter = function() {
+		this.style.border = "1px solid black"
+	}
+	
+	imgPlus.onmouseleave = function() {
+		if (changingLength != 0)
+			this.style.border = "";
+	}
+
+	imgPlus.onclick= function() {
+		if (changingLength != 0) {
+			changingLength = 0;
+			imgMinus.style.border = '';
+		}
+		else {
+			changingLength = -1;
+			this.style.border = ''
+		}
+	}
+
+	imgMinus.onmouseenter = function() {
+		this.style.border = "1px solid black";
+	}
+
+	imgMinus.onmouseleave = function() {
+		if (changingLength != 1)
+			this.style.border = "";		
+	}
+
+	imgMinus.onclick = function() {
+		if (changingLength != 1) {
+			changingLength = 1;
+			imgPlus.style.border = '';
+		}
+		else {
+			changingLength = 0;
+			this.style.border = '';
+		}
+	}
+
 	var cityNum = 10;
 
-	var graph = [];
-	for (var t=0; t<cityNum; t++) {
-		graph[t] = {};
+	function tableGraphTdMouseOver() {
+		var coords = this.id.split(';');
+		var pr1 = coords[0] !== "-1";
+		var pr2 = coords[1] !== "-1";
+		coords[0] = parseInt(coords[0]);
+		coords[1] = parseInt(coords[1]);
+
+		if (pr1) {
+			graph[coords[0]].highlighted = true;
+			
+		}
+		if (pr2) {
+			graph[coords[1]].highlighted = true;
+		}
+		if (pr1 && pr2) {
+			if (traces.length === 0) {
+				if (graph[coords[1]][coords[0]] !== undefined) {
+					graph[coords[1]][coords[0]].highlighted = true;
+				}
+			
+				if (graph[coords[0]][coords[1]] !== undefined) {
+					graph[coords[0]][coords[1]].highlighted = true;
+				}
+			} else {
+				var put = traces[coords[0]][coords[1]];
+				if (put !== undefined) {
+					var len = put.length-1;
+					for (var i = 0; i < put.length - 1; i++) {
+						graph[put[i]].highlighted = true;
+						graph[put[i]][put[i+1]].highlighted = true;
+					}
+
+					if (len !== -1)
+					{
+						graph[put[len]][coords[1]].highlighted = true;
+						graph[put[len]].highlighted = true;
+					}
+				}
+			}
+		}
+		this.bgColor = "green";
+
+	}
+
+	function tableGraphTdMouseLeave() {
+		var coords = this.id.split(';');
+		var pr1 = coords[0] !== "-1";
+		var pr2 = coords[1] !== "-1";
+		coords[0] = parseInt(coords[0]);
+		coords[1] = parseInt(coords[1]);
+
+		if (pr1) {
+			graph[coords[0]].highlighted = false;
+			
+		}
+		if (pr2) {
+			graph[coords[1]].highlighted = false;
+		}
+		if (pr1 && pr2) {
+			if (traces.length === 0) {
+				if (graph[coords[1]][coords[0]] !== undefined) {
+					graph[coords[1]][coords[0]].highlighted = false;
+				}
+			
+				if (graph[coords[0]][coords[1]] !== undefined) {
+					graph[coords[0]][coords[1]].highlighted = false;
+				}
+			} else {
+				var put = traces[coords[0]][coords[1]];
+				if (put !== undefined) {
+					var len = put.length-1;
+					for (var i = 0; i < put.length - 1; i++) {
+						graph[put[i]].highlighted = false;
+						
+						graph[put[i]][put[i+1]].highlighted = false;
+					}
+
+					if (len !== -1) {
+						graph[put[len]].highlighted = false;
+						graph[put[len]][coords[1]].highlighted = false;
+					}
+				}
+			}
+		}
+		this.bgColor = "white";
+	}
+
+	function tableGraphTdClick() {
+		var coords = this.id.split(';');
+		var pr1 = coords[0] !== "-1";
+		var pr2 = coords[1] !== "-1";
+		coords[0] = parseInt(coords[0]);
+		coords[1] = parseInt(coords[1]);
+		if (pr1 && pr2) {
+			if (graph[coords[0]][coords[1]] !== undefined) {
+				switch (changingLength) {
+					case 0:{
+						graph.changeRoadLengthAdd(coords[0],coords[1], 1);
+
+					} break;
+					case 1:{
+						graph.changeRoadLengthAdd(coords[0],coords[1], -1);						
+					}break;
+					case -1:{
+						graph.removeRoad(coords[0], coords[1]);		
+					}
+				}
+				
+			} else {
+				graph.addRoad(coords[0], coords[1]);
+			}
+		}	
+	}
+
+	/*
+	buttonMatrix.onclick = function() {
+		for (var t=0; t<graph.cityNum; t++) {
+			tableGraph.rows[1].remove();
+		}
+		var roadsNum = 0;
+		for (var t=0; t<graph.cityNum; t++) {
+			for (var t1=0; t1<graph.cityNum; t1++) {
+				if (graph[t][t1] !== undefined) {
+					var tr = document.createElement('tr');
+					var td = document.createElement('td');
+					td.innerHTML = roadsNum+1;
+					tr.appendChild(td);
+					for (var t2 = 0; t2<graph.cityNum; t2++) {
+						var td = document.createElement('td');
+						if (t2 === t)
+							if (t2 === t1)
+								td.innerHTML = 2;
+							else
+								td.innerHTML = -1;
+						else
+							if (t2 === t1) 
+								td.innerHTML = 1;
+							else
+								td.innerHTML = 0;
+						tr.appendChild(td);
+
+					}
+					tableGraph.appendChild(tr);
+					roadsNum++;
+				}
+			}
+		}
+	}
+	*/
+
+	function Graph() {	
+		this.cityNum = 0;
 		
+		this.addCity = function(x, y) {
+			var td = document.createElement('td');
+			td.innerHTML = this.cityNum+1;
+			td.id = '-1;'+this.cityNum;
+			td.onmouseenter = tableGraphTdMouseOver;
+			td.onmouseleave = tableGraphTdMouseLeave;
+			td.onclick = tableGraphTdClick;
+			tableGraph.rows[0].appendChild(td);
+
+			for (var t=0; t<this.cityNum; t++) {
+				var td = document.createElement('td');
+				td.innerHTML = "0";
+				td.id = t+";"+this.cityNum;
+				td.onmouseenter = tableGraphTdMouseOver;
+				td.onmouseleave = tableGraphTdMouseLeave;
+				td.onclick = tableGraphTdClick;
+				tableGraph.rows[t+1].appendChild(td);
+			}
+
+			var tr = document.createElement('tr');
+			var td = document.createElement('td');
+			td.innerHTML = this.cityNum + 1;
+			td.id = this.cityNum+';-1';
+			td.onmouseenter = tableGraphTdMouseOver;
+			td.onmouseleave = tableGraphTdMouseLeave;
+			td.onclick = tableGraphTdClick;
+			tr.appendChild(td);
+			for (var t=0; t<=this.cityNum; t++) {
+				var td = document.createElement('td');
+				td.innerHTML = "0";
+				td.id = this.cityNum + ";" + t;
+				td.onmouseenter = tableGraphTdMouseOver;
+				td.onmouseleave = tableGraphTdMouseLeave;
+				td.onclick = tableGraphTdClick;
+				tr.appendChild(td);
+			}
+			tableGraph.appendChild(tr);
+			getBoundingRects();
+
+			this[this.cityNum] = new City(x, y);
+			this.cityNum++;
+		}
+
+		this.addRoad = function(from, to, length, selected) {
+			this[from][to] = new Road(length, selected);
+			tableGraph.rows[from+1].cells[to+1].innerHTML = this[from][to].length;
+		}
+
+		this.changeRoadLengthAdd = function(from, to, length) {
+			this.changeRoadLength(from, to, graph[from][to].length+length);
+		}
+
+		this.changeRoadLength = function(from, to, length) {
+			if (length <=0) length = 1;
+			graph[from][to].length = length;
+			tableGraph.rows[from+1].cells[to+1].innerHTML = this[from][to].length;
+		}
+
+		this.removeRoad = function(from, to) {
+			this[from][to] = undefined;
+			tableGraph.rows[from+1].cells[to+1].innerHTML = "0";
+		}
+
+		return this;
+	}
+
+	function City(x, y) {
+		this.moving = false;
+		this.selected = false;
+		this.selectingTime = 0;
+		this.roadTarget = false;
+		this.highlighted = false;
+		this.angleCos = 1;
+		this.angleSin = 0;
+		if (x === undefined)
+			this.x = Math.random()*canvas.width
+		else
+			this.x = x;
+		if (y === undefined) 
+			this.y = Math.random()*canvas.height
+		else 
+			this.y = y;
+		return this;
+	}
+
+	function Road(length, selected) {
+		this.highlighted = false;
+		if (length === undefined) 
+			this.length = 1;
+		else
+			this.length = length;
+		if (selected === undefined)
+			this.selected = false;
+		else
+			this.selected = selected;
+		return this;
+	}
+
+	var graph = new Graph();
+	for (var t=0; t<cityNum; t++) {
+		graph.addCity();
+		
+	}
+
+	for (var t=0; t<cityNum; t++) {
 		for (var t1=0; t1<cityNum; t1++)
 			if (t != t1 && Math.random()<2/cityNum) {
-				graph[t][t1] = {};
-				graph[t][t1].length = 10;
-				graph[t][t1].selected = false;
+				graph.addRoad(t, t1);
 			}
-		for (var t1=0; t1<cityNum; t1++)
-		graph[t].moving = false;
-		graph[t].selected = false;
-		graph[t].selectingTime = 0;
-		graph[t].selectingTime = 0;
-		graph[t].roadTarget = false;
-		graph[t].angle = 0;
-		graph[t].x = Math.random()*canvas.width;
-		graph[t].y = Math.random()*canvas.height;
 	}
 
 		
@@ -97,10 +591,10 @@ window.onload = function() {
 		if (mx>0 && my>0 && mx<canvasBoundRect.right-canvasBoundRect.left
 						 && my<canvasBoundRect.bottom-canvasBoundRect.top) {
 			var pr =false;
-			for (var t=0; t<graph.length; t++) {
-				for (var t1=0; t1<graph.length; t1++) {
+			for (var t=0; t<graph.cityNum; t++) {
+				for (var t1=0; t1<graph.cityNum; t1++) {
 					if (graph[t][t1] !== undefined && graph[t][t1].selected) {
-						graph[t][t1] = undefined;
+						graph.removeRoad(t, t1);
 						pr = true;
 					}
 				}
@@ -110,7 +604,7 @@ window.onload = function() {
 
 			var minl2 = -1;
 			var minl2n = -1;
-			for (var t=0; t<graph.length; t++) {
+			for (var t=0; t<graph.cityNum; t++) {
 				var dx = mx-graph[t].x;
 				var dy = my-graph[t].y;
 				var l2 = dx*dx+dy*dy;
@@ -126,13 +620,9 @@ window.onload = function() {
 				}
 			}
 			if (minl2 > CIRCLE_RADIUS*CIRCLE_RADIUS*4) {
-				var n = graph.length;
-				graph[n] = {};
-				graph[n][minl2n] = {};
-				graph[n][minl2n].length = 10;
-				graph[n][minl2n].selected = false;
-				graph[n].x = mx;
-				graph[n].y = my;
+				var n = graph.cityNum;
+				graph.addCity(mx, my);
+				graph.addRoad(n, minl2n);
 			}
 		}
 	}
@@ -140,7 +630,7 @@ window.onload = function() {
 
 		var nmx = e.pageX - canvasBoundRect.left;
 		var nmy = e.pageY - canvasBoundRect.top;
-		for (var t=0; t<graph.length; t++) {
+		for (var t=0; t<graph.cityNum; t++) {
 			if (graph[t].moving) {
 				graph[t].x += nmx - mx;
 				graph[t].y += nmy - my;
@@ -166,7 +656,7 @@ window.onload = function() {
 	window.onmouseup = function(e) {
 		var selectedCities = [];
 		var roadTargetCities = [];
-		for (var t=0; t<graph.length; t++) {
+		for (var t=0; t<graph.cityNum; t++) {
 			if (graph[t].selected) {
 				selectedCities[selectedCities.length] = t;
 			}
@@ -183,13 +673,11 @@ window.onload = function() {
 						graph[selectedCities[t]][selectedCities[t]] = undefined;
 						continue;
 					}
-					graph[selectedCities[t]][roadTargetCities[t1]] = {};
-					graph[selectedCities[t]][roadTargetCities[t1]].length = 10;
-					graph[selectedCities[t]][roadTargetCities[t1]].selected = false;	
+					graph.addRoad(selectedCities[t], roadTargetCities[t1]);	
 				}
 		}
 
-		for (var t=0; t<graph.length; t++) {
+		for (var t=0; t<graph.cityNum; t++) {
 			graph[t].moving = false;
 			graph[t].selected = false;
 			graph[t].selectingTime = 0;
@@ -207,7 +695,13 @@ window.onload = function() {
 	}
 
 	function physics() {
-		for (var t=0; t<graph.length; t++)
+		for (var t=0; t<graph.cityNum; t++) {
+			if (graph[t][t] !== undefined) {
+				var newCos = 0.9962*graph[t].angleCos - 0.0872*graph[t].angleSin;
+				var newSin = 0.9962*graph[t].angleSin + 0.0872*graph[t].angleCos;
+				graph[t].angleCos = newCos;
+				graph[t].angleSin = newSin;
+			}
 			if (graph[t].moving) {
 				if (Math.abs(mx-graph[t].lmx)+Math.abs(my-graph[t].lmy)<20) {
 					var dt = new Date() - graph[t].lDate;
@@ -224,12 +718,13 @@ window.onload = function() {
 					graph[t].lDate = new Date();
 				}
 			}
-
+		}
+		
 		var div1 = document.getElementById('div1');
 		var div2 = document.getElementById('div2');
 		var dt = 0.1;
-		for (var t=0; t < graph.length; t++) {
-			for (var t1=t+1; t1<graph.length; t1++) {
+		for (var t=0; t < graph.cityNum; t++) {
+			for (var t1=t+1; t1<graph.cityNum; t1++) {
 				var dx = graph[t1].x - graph[t].x;
 				var dy = graph[t1].y - graph[t].y;  
 				var l2 = dx*dx + dy*dy;
@@ -271,20 +766,39 @@ window.onload = function() {
 
 	}
 
+	function getBoundingRects() {
+		canvasBoundRect = canvas.getBoundingClientRect();
+		scalaGravityTop = document.getElementById('scalaGravity').getBoundingClientRect().top;
+		scalaTensionTop = document.getElementById('scalaTension').getBoundingClientRect().top;
+	}
+
 	function paint() {
 		var ARROW_HEIGHT = 10;
 		var ARROW_COEF = 0.1;
 		ctx.fillStyle = "#6c6";	
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		for (var t = 0; t < graph.length; t++) {
+		for (var t = 0; t < graph.cityNum; t++) {
 			ctx.beginPath();
 
 			ctx.lineWidth = 2;
 			ctx.strokeStyle = graph[t].selected? "#54F" : "#939";
 			ctx.arc(graph[t].x, graph[t].y,CIRCLE_RADIUS, 0, 2*Math.PI, true);
-			if (graph[t][t] !== undefined)
-				ctx.lineTo(graph[t].x-CIRCLE_RADIUS, graph[t].y);
+			if (graph[t][t] !== undefined) {
+				var dx = CIRCLE_RADIUS*graph[t].angleCos;
+				var dy = CIRCLE_RADIUS*graph[t].angleSin;
+				ctx.moveTo(graph[t].x+dx, graph[t].y+dy);
+				ctx.lineTo(graph[t].x-dx, graph[t].y-dy);
+			}
 			ctx.stroke();
+
+			if (graph[t].highlighted) {
+
+				ctx.beginPath();
+
+				ctx.strokeStyle = '#DBE';
+				ctx.arc(graph[t].x, graph[t].y,CIRCLE_RADIUS+3, 0, 2*Math.PI, true);
+				ctx.stroke();
+			}
 
 			ctx.beginPath();
 
@@ -310,7 +824,7 @@ window.onload = function() {
 				var y2 = my;
 				var minl2 = -1;
 				var minl2n = -1;
-				for (var t1=0; t1<graph.length; t1++) 
+				for (var t1=0; t1<graph.cityNum; t1++) 
 					if (t != t1)
 					{
 						var dx = graph[t1].x-mx;
@@ -347,7 +861,7 @@ window.onload = function() {
 			ctx.stroke();
 
 
-			for (var t1 = t + 1; t1 < graph.length; t1++) {
+			for (var t1 = t + 1; t1 < graph.cityNum; t1++) {
 				var pr1 = graph[t][t1] !== undefined;
 				var pr2 = graph[t1][t] !== undefined;
 				if (pr1 || pr2) {
@@ -367,6 +881,17 @@ window.onload = function() {
 					var projX = (mx - x1)*cosa + (my - y1)*sina; 
 					var projY = (mx - x1)*(-sina) + (my - y1)*cosa;
 
+					if ((pr1 && graph[t][t1].highlighted) ||
+						(pr2 && graph[t1][t].highlighted)) {
+						ctx.beginPath();
+						ctx.lineWidth = 5;
+						
+						ctx.strokeStyle = '#DBE';
+						drawArrow(ctx, x1, y1, x2, y2, cosa, sina, l, pr1, pr2);
+						ctx.stroke();
+
+					}
+
 					ctx.beginPath();
 					ctx.lineWidth = 2;
 						
@@ -384,8 +909,13 @@ window.onload = function() {
 							graph[t1][t].selected = false;
 					}
 
+					
+
 					drawArrow(ctx, x1, y1, x2, y2, cosa, sina, l, pr1, pr2);
 					ctx.stroke();
+
+					
+
 				}
 			}
 
