@@ -24,17 +24,37 @@ window.onload = function() {
 	// var butMatAdjasency = document.getElementById('butMatAdjasency');
 	// var butMatDistance = document.getElementById('butMatDistance');
 	// var butMatReach = document.getElementById('butMatReach');
+
+	var clearHighlightes = document.getElementById('clearHighlightes');
+	clearHighlightes.onclick = function() {
+		for (var t = 0; t < graph.cityNum; t++) {
+			graph[t].highlighted = false;
+			for (var t1 = 0; t1 < graph.cityNum; t1++) {
+				if (graph[t][t1] != undefined) {
+					graph[t][t1].highlighted = false;
+				}
+			}
+		}
+	}
+
 	var exerciseSelect = document.getElementById('exerciseSelect');
 	exerciseSelect.selectedIndex = 0;
 	exerciseSelect.onchange = function() {
 		var parent = this.parentElement;
 			
+		while (parent.children.length>1) {
+			parent.children[1].remove();
+		}
+
+
 		switch (this.selectedIndex) {
+
 			case 0: {
 				while (parent.children.length>1) {
 					parent.children[1].remove();
 				}
 			} break;
+			
 			case 1: {
 				var textDiv = document.createElement('div');
 				textDiv.innerHTML = 'Початкова вершина';
@@ -104,6 +124,351 @@ window.onload = function() {
 
 				parent.appendChild(button1);
 			} break;
+			case 2: {
+				var textDiv = document.createElement('div');
+				textDiv.innerHTML = 'Початкова вершина';
+				parent.appendChild(textDiv);
+
+				var citySelect = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect.appendChild(opt);
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect.appendChild(opt);
+				}
+				parent.appendChild(citySelect);
+
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Знайти шлях комівояжера:';
+				button1.onclick = function() {
+					if (citySelect.selectedIndex == 0) {
+						citySelect.selectedIndex = 1;
+					}
+					var minJourney = salesman(graph, citySelect.selectedIndex-1);
+
+					if (minJourney.length != graph.cityNum + 1) {
+						alert('Немає шляху!');
+					} else {
+						var resTable = document.getElementById('resTable');
+						if (resTable) resTable.remove();
+						resTable = document.createElement('table');
+						resTable.id = 'resTable';
+						for (var t = 0; t < minJourney.length-1; t++) {
+							var tr = document.createElement('tr');
+							var td = document.createElement('td');
+							graph[minJourney[t]][minJourney[t+1]].highlighted = true;
+							td.innerHTML = minJourney[t]+1;
+							tr.appendChild(td);
+							resTable.appendChild(tr);
+						}
+						parent.appendChild(resTable);
+					}
+				}
+
+				parent.appendChild(button1);
+				
+			} break;
+			case 3: {
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Знайти ейлерові структури:';
+				button1.onclick = function() {
+					var minJourney = eiler(graph);
+					alert(minJourney);
+					if (minJourney.length == 0) {
+						alert('Немає маршруту!');
+					} else  {
+						var resTable = document.getElementById('resTable');
+						if (resTable) resTable.remove();
+						resTable = document.createElement('table');
+						resTable.id = 'resTable';
+						var tr = document.createElement('tr');
+						var td = document.createElement('td');
+						if (minJourney[0] != minJourney[minJourney.length-1]) {
+							td.innerHTML = 'Ейлерів маршрут';
+						} else {
+							td.innerHTML = 'Ейлерів цикл';
+						}
+						tr.appendChild(td);
+						resTable.appendChild(tr);
+						for (var t = 0; t < minJourney.length-2; t++) {
+							var tr = document.createElement('tr');
+							var td = document.createElement('td');
+							graph[minJourney[t]][minJourney[t+1]].highlighted = true;
+							td.innerHTML = minJourney[t]+1;
+							tr.appendChild(td);
+							resTable.appendChild(tr);
+						}
+						tr = document.createElement('tr');
+						td = document.createElement('td');
+						td.innerHTML = minJourney[minJourney.length-1]+1;
+						tr.appendChild(td);
+						resTable.appendChild(tr);
+						parent.appendChild(resTable);
+					
+					}
+				}
+
+				parent.appendChild(button1);
+
+			} break;
+
+			case 4: {
+				var textDiv = document.createElement('div');
+				textDiv.innerHTML = 'Початкова вершина';
+				parent.appendChild(textDiv);
+
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Знайти гамільтонові структури:';
+				button1.onclick = function() {
+					var minJourney = salesman(graph, 0);
+					if (minJourney.length != graph.cityNum+1) {
+						for (var t = 1; t < graph.cityNum; t++) {
+							if (minJourney.length == cityNum) {
+								break;
+							}
+							minJourney = salesman(graph, t);
+						}
+					}
+
+					if (minJourney.length == 0) {
+						alert('Немає маршруту!');
+					} else  {
+						var pr1 = minJourney.length == graph.cityNum;
+						var pr2 = minJourney.length == graph.cityNum+1;
+						if (pr1 || pr2) {
+							var resTable = document.getElementById('resTable');
+							if (resTable) resTable.remove();
+							resTable = document.createElement('table');
+							resTable.id = 'resTable';
+							var tr = document.createElement('tr');
+							var td = document.createElement('td');
+							if (pr1) {
+								td.innerHTML = 'Гамільтонів маршрут';
+							}
+							if (pr2) {
+								td.innerHTML = 'Гамільтонів цикл';
+							}
+							tr.appendChild(td);
+							resTable.appendChild(tr);
+							for (var t = 0; t < minJourney.length-1; t++) {
+								var tr = document.createElement('tr');
+								var td = document.createElement('td');
+								graph[minJourney[t]][minJourney[t+1]].highlighted = true;
+								td.innerHTML = minJourney[t]+1;
+								tr.appendChild(td);
+								resTable.appendChild(tr);
+							}
+							if (pr1) {
+								tr = document.createElement('tr');
+								td = document.createElement('td');
+								td.innerHTML = minJourney[minJourney.length-1];
+								tr.appendChild(td);
+								resTable.appendChild(tr);
+							}
+							parent.appendChild(resTable);
+						}
+					}
+				}
+
+				parent.appendChild(button1);
+			} break;
+
+			case 5: {
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Обрахувати відстані:';
+				var res;
+
+				button1.onclick = function() {
+					res = FloydForshel(graph);
+					var str = '';
+					for (var t = 0; t < res['del'].length; t++) {
+						for (var t1 = 0; t1 < res['del'][t].length; t1++) {
+							if (res['del'][t][t1] === false)
+								str += "x\t";
+							else
+								str += res['del'][t][t1]+"\t";
+						}
+						str+="\n";
+					}
+					alert(str);
+				}
+
+				parent.appendChild(button1);	
+
+				var textDiv = document.createElement('div');
+				textDiv.innerHTML = 'Початкова вершина';
+				parent.appendChild(textDiv);
+
+				var citySelect = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect.appendChild(opt);
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect.appendChild(opt);
+				}
+				parent.appendChild(citySelect);
+				
+				var textDiv2 = document.createElement('div');
+				textDiv2.innerHTML = 'Кінцева вершина';
+				parent.appendChild(textDiv2);
+
+				var citySelect2 = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect2.appendChild(opt);
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect2.appendChild(opt);
+				}
+				parent.appendChild(citySelect2);
+
+				var button2 = document.createElement('button');
+				button2.innerHTML = 'Показати шлях:';
+
+				button2.onclick = function() {
+					if (res == undefined) {
+						alert('Спочатку обрахуйте відстані');
+						return;
+					}
+					if (citySelect.selectedIndex == 0) {
+						citySelect.selectedIndex = 1;
+					}
+					if (citySelect2.selectedIndex == 0) {
+						citySelect2.selectedIndex = 1;
+					}
+
+					var ii = citySelect.selectedIndex-1;
+					var jj = citySelect2.selectedIndex-1;
+
+					var prel = res['ways'][ii][jj];
+					
+					if (prel === false) { 
+						alert('Немає шляху!');
+						return;
+					}
+					
+					for (var t = 0; t < prel.length-1; t++) {
+						if (graph[prel[t]][prel[t+1]] !== undefined)
+						graph[prel[t]][prel[t+1]].highlighted = true;
+						graph[prel[t]].highlighted = true;
+					}
+					if (graph[prel[prel.length-1]][jj])
+					{
+						graph[prel[prel.length-1]][jj].highlighted = true;
+						graph[prel[prel.length-1]].highlighted = true;
+						graph[jj].highlighted = true;
+
+					}
+					
+
+					//alert(res['ways'][citySelect.selectedIndex-1][citySelect2.selectedIndex-1]);
+
+				}
+
+				parent.appendChild(button2);
+			} break;
+
+			case 6: {
+				var button1 = document.createElement('button');
+				button1.innerHTML = 'Обрахувати відстані:';
+				var res;
+
+				button1.onclick = function() {
+					res = FloydForshel(graph);
+					var str = '';
+					for (var t = 0; t < res['del'].length; t++) {
+						for (var t1 = 0; t1 < res['del'][t].length; t1++) {
+							if (res['del'][t][t1] === false)
+								str += "x\t";
+							else
+								str += res['del'][t][t1]+"\t";
+						}
+						str+="\n";
+					}
+					alert(str);
+				}
+
+				parent.appendChild(button1);	
+
+				var textDiv = document.createElement('div');
+				textDiv.innerHTML = 'Початкова вершина';
+				parent.appendChild(textDiv);
+
+				var citySelect = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect.appendChild(opt);
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect.appendChild(opt);
+				}
+				parent.appendChild(citySelect);
+				
+				var textDiv2 = document.createElement('div');
+				textDiv2.innerHTML = 'Кінцева вершина';
+				parent.appendChild(textDiv2);
+
+				var citySelect2 = document.createElement('select');
+				var opt = document.createElement('option');
+				opt.innerHTML = 'Вершина';
+				citySelect2.appendChild(opt);
+				for (var i = 0; i < graph.cityNum; i++) {
+					opt = document.createElement('option');
+					opt.innerHTML = i + 1;
+					citySelect2.appendChild(opt);
+				}
+				parent.appendChild(citySelect2);
+
+				var button2 = document.createElement('button');
+				button2.innerHTML = 'Показати шлях:';
+
+				button2.onclick = function() {
+					if (res == undefined) {
+						alert('Спочатку обрахуйте відстані');
+						return;
+					}
+					if (citySelect.selectedIndex == 0) {
+						citySelect.selectedIndex = 1;
+					}
+					if (citySelect2.selectedIndex == 0) {
+						citySelect2.selectedIndex = 1;
+					}
+
+					var ii = citySelect.selectedIndex-1;
+					var jj = citySelect2.selectedIndex-1;
+
+					var prel = res['ways'][ii][jj];
+					if (prel === false) { 
+						alert('Немає шляху!');
+						return;
+					}
+					
+					for (var t = 0; t < prel.length-1; t++) {
+						if (graph[prel[t]][prel[t+1]] !== undefined)
+						graph[prel[t]][prel[t+1]].highlighted = true;
+						graph[prel[t]].highlighted = true;
+					}
+					if (graph[prel[prel.length-1]][jj])
+					{
+						graph[prel[prel.length-1]][jj].highlighted = true;
+						graph[prel[prel.length-1]].highlighted = true;
+						graph[jj].highlighted = true;
+
+					}
+					else alert(prel+' '+jj);
+
+					//alert(res['ways'][citySelect.selectedIndex-1][citySelect2.selectedIndex-1]);
+
+				}
+
+				parent.appendChild(button2);
+			} break;
 		}
 	}
 
@@ -122,7 +487,7 @@ window.onload = function() {
 	var mx = 0, my = 0;
 	var changingGravity = false;
 	var changingTension = false;
-	var changingLength = -1;
+	var changingLength = 0;
 		var matType = 0
 
 	/**
@@ -252,22 +617,22 @@ window.onload = function() {
 	*/
 
 	imgPlus.onmouseenter = function() {
-		this.style.border = "1px solid black"
+		this.style.border = "1px solid black";
 	}
 	
 	imgPlus.onmouseleave = function() {
-		if (changingLength != 0)
+		if (changingLength != 1)
 			this.style.border = "";
 	}
 
 	imgPlus.onclick= function() {
-		if (changingLength != 0) {
+		if (changingLength == 1) {
 			changingLength = 0;
 			imgMinus.style.border = '';
 		}
 		else {
-			changingLength = -1;
-			this.style.border = ''
+			changingLength = 1;
+			this.style.border = "1px solid black";
 		}
 	}
 
@@ -276,18 +641,18 @@ window.onload = function() {
 	}
 
 	imgMinus.onmouseleave = function() {
-		if (changingLength != 1)
+		if (changingLength != -1)
 			this.style.border = "";		
 	}
 
 	imgMinus.onclick = function() {
-		if (changingLength != 1) {
-			changingLength = 1;
+		if (changingLength == -1) {
+			changingLength = 0;
 			imgPlus.style.border = '';
 		}
 		else {
-			changingLength = 0;
-			this.style.border = '';
+			changingLength = -1;
+			this.style.border = '1px solid black';
 		}
 	}
 
@@ -389,14 +754,14 @@ window.onload = function() {
 		if (pr1 && pr2) {
 			if (graph[coords[0]][coords[1]] !== undefined) {
 				switch (changingLength) {
-					case 0:{
+					case 1:{
 						graph.changeRoadLengthAdd(coords[0],coords[1], 1);
 
 					} break;
-					case 1:{
+					case -1:{
 						graph.changeRoadLengthAdd(coords[0],coords[1], -1);						
 					}break;
-					case -1:{
+					case 0:{
 						graph.removeRoad(coords[0], coords[1]);		
 					}
 				}
@@ -457,7 +822,7 @@ window.onload = function() {
 
 			for (var t=0; t<this.cityNum; t++) {
 				var td = document.createElement('td');
-				td.innerHTML = "0";
+				td.innerHTML = "x";
 				td.id = t+";"+this.cityNum;
 				td.onmouseenter = tableGraphTdMouseOver;
 				td.onmouseleave = tableGraphTdMouseLeave;
@@ -475,7 +840,7 @@ window.onload = function() {
 			tr.appendChild(td);
 			for (var t=0; t<=this.cityNum; t++) {
 				var td = document.createElement('td');
-				td.innerHTML = "0";
+				td.innerHTML = "x";
 				td.id = this.cityNum + ";" + t;
 				td.onmouseenter = tableGraphTdMouseOver;
 				td.onmouseleave = tableGraphTdMouseLeave;
@@ -499,14 +864,13 @@ window.onload = function() {
 		}
 
 		this.changeRoadLength = function(from, to, length) {
-			if (length <=0) length = 1;
 			graph[from][to].length = length;
 			tableGraph.rows[from+1].cells[to+1].innerHTML = this[from][to].length;
 		}
 
 		this.removeRoad = function(from, to) {
 			this[from][to] = undefined;
-			tableGraph.rows[from+1].cells[to+1].innerHTML = "0";
+			tableGraph.rows[from+1].cells[to+1].innerHTML = "x";
 		}
 
 		return this;
@@ -542,6 +906,181 @@ window.onload = function() {
 		else
 			this.selected = selected;
 		return this;
+	}
+
+	// function dejkstra(graph, from) {
+	// 	var res = new Array(graph.cityNum);
+	// 	var s = new Array(graph.cityNum);
+	// 	for (int i = 0; i < graph.cityNum; i++) {
+	// 		res[i] = false;
+	// 	}
+	// 	res[from] = 0;
+
+	// }
+
+	function FloydForshel(graph) {
+		var res = new Array(graph.cityNum);
+		var way = new Array(graph.cityNum);
+		for (var i = 0; i < graph.cityNum; i++) {
+			res[i] = new Array(graph.cityNum);
+			way[i] = new Array(graph.cityNum);
+			for (var j = 0; j < graph.cityNum; j++) {
+				if (graph[i][j] !== undefined) {
+					res[i][j] = graph[i][j].length;
+					way[i][j] = [i];
+				
+				} else {
+					way[i][j] = false;
+					if (i == j) {
+						res[i][j] = 0;
+					} else {
+						res[i][j] = false;
+					}
+				}
+			}
+		}
+		for (var k = 0; k < graph.cityNum; k++) {
+			for (var i = 0; i < graph.cityNum; i++) {
+				for (var j = 0; j < graph.cityNum; j++) {
+					if (res[i][k] != false && res[k][j] != false) {
+						if (res[i][j] === false) {
+							res[i][j] = res[i][k] + res[k][j];
+							way[i][j] = way[i][k].concat(way[k][j]);	
+						} else {
+							if (res[i][k] + res[k][j] < res[i][j]) {
+								res[i][j] = res[i][k] + res[k][j];
+								way[i][j] = way[i][k].concat(way[k][j]);
+							}
+						}
+					}
+				}
+			}
+		}
+		return { 'del': res, 'ways': way};
+
+	}
+
+	function eiler(graph) {
+		var kol = 0;
+		var eCities = [];
+		var s = new Array(graph.cityNum);
+		var road_count = 0;
+		for (var t = 0; t < graph.cityNum; t++) {
+			s[t] = new Array(graph.cityNum);
+			var curKol = 0;
+			for (var t1 = 0; t1 < graph.cityNum; t1++) {
+				if (t!=t1) {
+					if (graph[t1][t] != undefined) {
+						curKol--;
+					}
+					if (graph[t][t1] != undefined) {
+						curKol++;
+						road_count++;
+						s[t][t1] = true;
+					} else {
+						s[t][t1] = false;
+					}
+				}
+			}
+			if (curKol != 0) {
+				kol++;
+				eCities.push(t);
+			}
+		}
+		if (kol > 2 || kol == 1) {
+			return [];
+		}
+
+		if (kol == 0) {
+			eCities[0] = 0;
+			eCities[1] = 0;
+		}
+
+		var journey = [];
+
+		var curCity = eCities[0];
+		while (road_count > 0) {
+			var pr = true;
+			for (var t = 0; t < graph.cityNum; t++) {
+				if (curCity != t && s[curCity][t] && t!=eCities[1]) {
+					s[curCity][t] = false;
+					journey.push(curCity);
+					curCity = t;
+					road_count--;
+					pr = false;
+				}
+			}
+			if (pr) {
+				s[curCity][eCities[1]] = false;
+				journey.push(curCity);
+				curCity = eCities[1];
+				road_count--;
+			}
+		}
+		journey.push(eCities[1]);
+
+		return journey;
+
+	}
+
+	function salesman(graph, bCity) {
+		var s = new Array(graph.cityNum);
+		for (var t = 0; t < graph.cityNum; t++) {
+			s[t] = true;
+		}
+		var cities = new Array();
+		cities.push(bCity);
+		var nextCities = new Array();
+		nextCities.push(0);
+		var minJourney = new Array();
+		var curLen = 0;
+		var minLen = -1;
+
+		while (cities.length != 0) {
+			// alert(cities);
+			if (cities.length == graph.cityNum) {
+				var road = graph[cities[cities.length-1]][bCity]; 
+				if (road != undefined) {
+					if (minLen == -1 || curLen + road.length< minLen) {
+						minLen = curLen + road.length;
+						minJourney = cities.slice();
+						minJourney.push(bCity);
+					}
+				} else {
+					if (minJourney.length == 0) {
+						minJourney = cities.slice();
+					}
+				}
+				s[cities[cities.length-1]] = true;
+				cities.pop();
+				nextCities.pop();
+				continue;
+			}
+
+
+			var lNCities = nextCities[nextCities.length-1];
+			var curCity = cities[cities.length-1]; 
+			while (lNCities < graph.cityNum && (curCity == lNCities ||
+				!s[lNCities] || 
+				graph[curCity][lNCities] == undefined || 
+				(minLen != -1 && curLen + graph[curCity][lNCities].length > minLen))) {
+				lNCities++;
+			}
+
+			if (lNCities == graph.cityNum) {
+				s[cities[cities.length-1]] = true;
+				cities.pop();
+				nextCities.pop();
+				continue;
+			}
+
+			cities.push(lNCities);
+			nextCities.push(0);
+			s[lNCities] = false;
+			nextCities[nextCities.length-2] = lNCities+1;
+		}
+
+		return minJourney;
 	}
 
 	var graph = new Graph();
